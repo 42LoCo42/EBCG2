@@ -1,20 +1,23 @@
-#include <iostream>
+#include <stdio.h>
 #include <string>
+#include <thread>
+#include <mutex>
+#include <unistd.h>
 
+#include "EBCG_Main.hpp"
+#include "queue.hpp"
 #include "BoardControl.hpp"
-#include "SaveState.hpp"
 #include "TUI.hpp"
 #include "defs.hpp"
 
 using namespace std;
 
+bool programActive = true;
+mutex programActive_mutex;
 bool noTUI = false;
-int ipcCount = 0;
+int maxClients = 0;
 
 GameState gameState = GameState::mainMenu;
-SaveState currentSave;
-board_t board;
-int score;
 
 int main(int argc, char* argv[]) {
 	// parse args. i=1 to skip the program invocation
@@ -23,33 +26,52 @@ int main(int argc, char* argv[]) {
 		if(s.compare("--noTUI") == 0) {
 			noTUI = true;
 		}
-		else if(s.compare("--ipcCount") == 0) {
+		else if(s.compare("--slots") == 0) {
 			++i;
-			ipcCount = stoi(string(argv[i]));
-			cout << "Loaded " << ipcCount << " IPC slots!\n";
+			maxClients = stoi(string(argv[i]));
+			printf("Server started with %i slots!\n", maxClients);
 		}
 		else {
-			cout << "Unknown argument " << s << '\n';
+			printf("Unknown argument %s\n", s.c_str());
 		}
 	}
 
-	// TODO: clean this for IPC init
-	currentSave = SaveState(3, 3);
-	board = currentSave.board;
-	score = currentSave.score;
-	// cout << "loaded save\n";
-	// printBoard();
+	// create TUI and server thread if needed
+	queue<string> msgQueue;
+	thread tui_thread;
+	thread server_thread;
 
-	// start the TUI and TODO: its message adapter
-	if(!noTUI) {
-		startTUI();
-		while(true) {
-			printGameState(gameState);
-			refresh();
-			if(gameState == GameState::quit) break;
-		}
-		endwin();
+	if(!noTUI) tui_thread = thread(TUIThread, ref(msgQueue));
+	if(maxClients > 0) server_thread = thread(serverThread, ref(msgQueue));
+
+	// main loop. handle messages from TUI and server
+	string threadMsg;
+	while(programActive) {
+		threadMsg = msgQueue.pop();
 	}
 
+	// handle thread termination
+	if(!noTUI) tui_thread.join();
+	if(maxClients > 0) server_thread.join();
 	return 0;
+}
+
+void TUIThread(queue<string>& msgQueue) {
+	startTUI(); // inits ncurses
+
+	while(programActive) {
+		printGameState(gameState); // prints everything required
+		msgQueue.push(to_string(gameState));
+		if(gameState == GameState::quit) break;
+	}
+
+	// Program is ending
+	endwin();
+	lock_guard<mutex> lock(programActive_mutex);
+	programActive = false;
+	msgQueue.push("_QUIT_"); // unblock main loop
+}
+
+void serverThread(queue<string>& msgQueue) {
+
 }

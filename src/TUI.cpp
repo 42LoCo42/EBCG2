@@ -1,7 +1,9 @@
 #include <ncurses.h>
-#include <CursedCat.hpp>
 #include <string>
 #include <vector>
+#include <CursedCat_decls.hpp> // actual declarations
+
+#include <stdio.h>
 
 #include "TUI.hpp"
 #include "defs.hpp"
@@ -11,6 +13,13 @@ using namespace std;
 using namespace CursedCat;
 
 extern SaveState currentSave;
+
+string getHeader() {
+	int height, width;
+	getmaxyx(stdscr, height, width);
+	if(width < 83) return "assets/header_small.txt";
+	else return "assets/header_big.txt";
+}
 
 void startTUI() {
 	initscr();
@@ -33,11 +42,17 @@ void startTUI() {
 void printGameState(GameState& gs) {
 	int height, width;
 	getmaxyx(stdscr, height, width);
+	erase();
 
 	if(gs == GameState::mainMenu) {
-		vector<LineData> lines = CursedCat::read("assets/mainMenu.txt");
+		LineDataSet menu;
 
-		int selected = handleMenu(vector<LineData> {lines[23], lines[24], lines[25], lines[26]});
+		CursedCat::readFile(getHeader().c_str());
+		CursedCat::readFile("assets/mainMenu.txt", &menu);
+		CursedCat::write();
+
+		int selected = handleMenu(menu);
+
 		switch(selected) {
 			case 0: gs = GameState::playing; break;
 			case 1: gs = GameState::openMenu; break;
@@ -46,6 +61,21 @@ void printGameState(GameState& gs) {
 		}
 	}
 	else if(gs == GameState::openMenu) {
+		LineDataSet saves;
+		string savegamename = "- savegame";
+
+		erase();
+		CursedCat::readFile(getHeader().c_str());
+		CursedCat::readFile("assets/openMenu.txt");
+
+		CursedCat::readFile("assets/back.txt", &saves);
+		for(int i=0; i<5; ++i) { // simulate content
+			CursedCat::read(savegamename + to_string(i) + "  ", &saves);
+		}
+
+		CursedCat::write();
+
+		int selected = handleMenu(saves);
 		gs = GameState::mainMenu;
 	}
 	else if(gs == GameState::settingsMenu) {
@@ -68,23 +98,23 @@ void printGameState(GameState& gs) {
 	}
 }
 
-int handleMenu(const vector<LineData>& lines) {
+int handleMenu(const LineDataSet& lds) {
 	int selected = 0;
 	int c;
-
+	
 	while(true) {
-		for(int i=0; i<lines.size(); ++i) {
-			mvprintw(lines[i].y, lines[i].x, " ");
-			mvprintw(lines[i].y, lines[i].x + lines[i].length - 1, " ");
+		for(int i=0; i<lds.lineData.size(); ++i) {
+			mvprintw(lds.lineData[i].y, lds.lineData[i].x, " ");
+			mvprintw(lds.lineData[i].y, lds.lineData[i].x + lds.lineData[i].length - 1, " ");
 		}
 
 		attron(COLOR_PAIR(1));
-		mvprintw(lines[selected].y, lines[selected].x, "[");
-		mvprintw(lines[selected].y, lines[selected].x + lines[selected].length - 1, "]");
+		mvprintw(lds.lineData[selected].y, lds.lineData[selected].x, "[");
+		mvprintw(lds.lineData[selected].y, lds.lineData[selected].x + lds.lineData[selected].length - 1, "]");
 		attroff(COLOR_PAIR(1));
 
 		c = getch();
-		if(c == KEY_DOWN && selected < lines.size() - 1) {
+		if(c == KEY_DOWN && selected < lds.lineData.size() - 1) {
 			++selected;
 		}
 		else if(c == KEY_UP && selected > 0) {

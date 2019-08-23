@@ -1,3 +1,4 @@
+#pragma once
 #include <ncurses.h>
 #include <CursedCat.hpp>
 #include <vector>
@@ -6,4 +7,4 @@
 
 void startTUI();
 void printGameState(GameState& gs);
-int handleMenu(const std::vector<CursedCat::LineData>& lines);
+int handleMenu(const CursedCat::LineDataSet& lds);
