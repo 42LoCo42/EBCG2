@@ -16,16 +16,6 @@ int nextNum(int max) {
 	return rand() % max + 1;
 }
 
-void printBoard() {
-	for(int y=0; y<save.board[0].size(); ++y) {
-		for(int x=0; x<save.board.size(); ++x) {
-			printf("%i,%i|%i,%i ", save.board[x][y].num, save.board[x][y].prio, save.board[x][y].futureNum, save.board[x][y].futurePrio);
-		}
-		printf("\n");
-	}
-	printf("\n");
-}
-
 void setupBoard(board_t& board, int xLen, int yLen) {
 	save.board = board_t(xLen);
 	for(int x=0; x<xLen; ++x) {
@@ -61,10 +51,9 @@ void step() {
 				if(save.board[x][y].prio > 0) doMerge(x, y);
 			}
 		}
-		printBoard();
 
 		applyUpdate();
-		printBoard();
+		
 	}
 	while(boardChanged);
 }
@@ -146,28 +135,27 @@ void clearLowerThan(int num) {
 	}
 }
 
-bool insert(int num, int col) {
+bool insert(int col = -1) {
+	if(col == -1) col = save.currentCol;
 	if(save.board[col][save.board[0].size()-1].num != 0) return false; // topmost row is full; can't insert cell
 
 	for(int y=save.board[col].size()-1; y>0; --y) { // scan downwards
 		if(save.board[col][y-1].num != 0) { // cell below is not zero
 
-			save.board[col][y].num = num;
+			save.board[col][y].num = save.currentNum;
 			save.board[col][y].prio = DEFAULT_PRIO;
-			save.board[col][y].futureNum = num;
-
-			printBoard();
+			save.board[col][y].futureNum = save.currentNum;
+			
 			step();
 			return true;
 		}
 	}
 
 	// we are at the bottom
-	save.board[col][0].num = num;
+	save.board[col][0].num = save.currentNum;
 	save.board[col][0].prio = DEFAULT_PRIO;
-	save.board[col][0].futureNum = num;
-
-	printBoard();
+	save.board[col][0].futureNum = save.currentNum;
+	
 	step();
 	return true;
 }

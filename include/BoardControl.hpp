@@ -9,7 +9,6 @@ enum enlargeOption {
 
 int nextNum(int max);
 
-void printBoard();
 void setupBoard(board_t& board, int xLen, int yLen); /** creates an empty board of these dimensions */
 void enlarge(const enlargeOption& opt); /** adds a row of cells on this side */
 

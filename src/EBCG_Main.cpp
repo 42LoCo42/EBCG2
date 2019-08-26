@@ -1,77 +1,59 @@
-#include <stdio.h>
-#include <string>
+#include <stdio.h> // printf
+#include <string> // for queue type
 #include <thread>
-#include <mutex>
-#include <unistd.h>
+#include <mutex> // safe & synchronized termination
+// #include <unistd.h>
 
-#include "EBCG_Main.hpp"
 #include "queue.hpp"
-#include "BoardControl.hpp"
-#include "TUI.hpp"
 #include "defs.hpp"
 
 using namespace std;
 
-bool programActive = true;
+int clientCount = 0;
+
 mutex programActive_mutex;
-bool noTUI = false;
-int maxClients = 0;
+bool programActive = true;
+
+queue<string> actionQueue;
+queue<string> resultQueue;
 
 GameState gameState = GameState::mainMenu;
 
 int main(int argc, char* argv[]) {
-	// parse args. i=1 to skip the program invocation
-	for(int i=1; i<argc; ++i) {
-		string s {argv[i]};
-		if(s.compare("--noTUI") == 0) {
-			noTUI = true;
-		}
-		else if(s.compare("--slots") == 0) {
-			++i;
-			maxClients = stoi(string(argv[i]));
-			printf("Server started with %i slots!\n", maxClients);
-		}
-		else {
-			printf("Unknown argument %s\n", s.c_str());
-		}
+	// get number of clients
+	if(argc < 2) {
+		printf("Usage: ebcg2 <client count>\n");
+		exit(1);
 	}
 
-	// create TUI and server thread if needed
-	queue<string> msgQueue;
-	thread tui_thread;
-	thread server_thread;
+	clientCount = stoi(string(argv[1]));
+	if(clientCount < 1) {
+		printf("Error: < 1 clients!\n");
+		exit(1);
+	}
 
-	if(!noTUI) tui_thread = thread(TUIThread, ref(msgQueue));
-	if(maxClients > 0) server_thread = thread(serverThread, ref(msgQueue));
+	// start server
+	thread serverThread = thread(serverLoop);
+	printf("EBCG2 server started with %i slots!\n", clientCount);
 
-	// main loop. handle messages from TUI and server
+	// main loop. accept messages from server, process them and send results back
 	string threadMsg;
 	while(programActive) {
-		threadMsg = msgQueue.pop();
+		threadMsg = actionQueue.pop();
+		// TODO: process messages. for now, push temporary result.
+		resultQueue.push("done");
 	}
 
-	// handle thread termination
-	if(!noTUI) tui_thread.join();
-	if(maxClients > 0) server_thread.join();
+	// wait for server to end
+	server_thread.join();
 	return 0;
 }
 
-void TUIThread(queue<string>& msgQueue) {
-	startTUI(); // inits ncurses
+/** 
+TODO
+Mutex locking
 
-	while(programActive) {
-		printGameState(gameState); // prints everything required
-		msgQueue.push(to_string(gameState));
-		if(gameState == GameState::quit) break;
-	}
-
-	// Program is ending
-	endwin();
-	lock_guard<mutex> lock(programActive_mutex);
-	programActive = false;
-	msgQueue.push("_QUIT_"); // unblock main loop
-}
-
-void serverThread(queue<string>& msgQueue) {
-
-}
+lock_guard<mutex> lock(programActive_mutex);
+programActive = false;
+msgQueue.push("_QUIT_"); // unblock main loop
+*/
