@@ -1,59 +1,64 @@
 #include <stdio.h> // printf
-#include <string> // for queue type
-#include <thread>
-#include <mutex> // safe & synchronized termination
-// #include <unistd.h>
+#include <string> // for message type
+#include <MSS.hpp> // for server
 
-#include "queue.hpp"
 #include "defs.hpp"
 
 using namespace std;
 
-int clientCount = 0;
+constexpr int DEFAULT_PORT = 2048;
 
-mutex programActive_mutex;
-bool programActive = true;
-
-queue<string> actionQueue;
-queue<string> resultQueue;
-
+int port = DEFAULT_PORT, clientCount;
 GameState gameState = GameState::mainMenu;
 
 int main(int argc, char* argv[]) {
 	// get number of clients
 	if(argc < 2) {
-		printf("Usage: ebcg2 <client count>\n");
+		printf("Usage: ebcg2 <client count> [port]\n");
 		exit(1);
 	}
 
 	clientCount = stoi(string(argv[1]));
+	if(argc >= 3) port = stoi(string(argv[2]));
+
 	if(clientCount < 1) {
 		printf("Error: < 1 clients!\n");
 		exit(1);
 	}
 
 	// start server
-	thread serverThread = thread(serverLoop);
-	printf("EBCG2 server started with %i slots!\n", clientCount);
+	printf("EBCG2 server started with %i slots on port %i!\n", clientCount, port);
+	MSS server = MSS(clientCount, port);
+	MSS_msg msg;
+	string clientIP;
 
-	// main loop. accept messages from server, process them and send results back
-	string threadMsg;
-	while(programActive) {
-		threadMsg = actionQueue.pop();
-		// TODO: process messages. for now, push temporary result.
-		resultQueue.push("done");
+	// main loop. accept messages from clients, process them and distribute results
+	while(true) {
+		server.receive(msg);
+
+		// Handle message
+		if(msg.text.length() > 0) { // real message		
+			printf("%i: %s", msg.client_id, msg.text.c_str());
+			server.send(msg.text, msg.client_id);
+		}
+		else {
+			if(msg.isNewClient) { // connection from new client
+				server.getClientIP(msg.client_id, clientIP);
+
+				if(msg.client_id == -1) { // no slot for client
+					printf("Client %s failed to connect!\n", clientIP.c_str());
+				}
+				else {
+					printf("Client %s (index %i) connected!\n", clientIP.c_str(), msg.client_id);
+					server.send("Hello, comrade!\n", msg.client_id);
+				}
+			}
+			else { // client disconnected
+				printf("Client %s (index %i) disconnected!\n", clientIP.c_str(), msg.client_id);
+			}
+		}
+
 	}
 
-	// wait for server to end
-	server_thread.join();
 	return 0;
 }
-
-/** 
-TODO
-Mutex locking
-
-lock_guard<mutex> lock(programActive_mutex);
-programActive = false;
-msgQueue.push("_QUIT_"); // unblock main loop
-*/

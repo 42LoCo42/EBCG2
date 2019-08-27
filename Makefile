@@ -23,7 +23,7 @@ BUILD_DIR ?= ./build
 CFLAGS ?=
 CXXFLAGS ?= --std=c++14
 ASFLAGS ?=
-LDFLAGS ?= -lncurses -lcursedcat -pthread
+LDFLAGS ?= -lmss
 
 
 # Everything below this line does not need to be changed normally!
