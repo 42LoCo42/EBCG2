@@ -1,0 +1,19 @@
+Responses (sent from server to all clients):
+	"error"					Operation failed. "error WrongMode" is sent on all operations if not in the right mode (e.g. "insert" with no previous "newgame" or "loadgame"). Custom errors are noted.
+	"board <text>"			The board as a string, sent after each modification.
+	"curpoints <number>"	How many points you have. Sent after merges and buying.
+	"maxpoints <number>"	How many points you have earned in this game (not affected by buying). Sent after merges.
+	"number <number>"		The number that will be inserted next. Sent after each "insert".
+	"clear"					Sent after an "insert" that caused a board clear. The game will wait for a "clearoption <y/n> <top/bottom/left/right>", details there.
+
+Game management:
+	"newgame"				Starts a new game.
+	"savegame <name>"		Saves current game with this name. "error NameInvalid" if the name is invalid. "error NameInUse" if name in use.
+	"loadgame <name>"		Loads savegame with this name. "error NameInvalid" if the name is invalid. "error NameNotFound" if name not found.
+	"quitgame"				Discards current game.
+	"stopserver"			Disconnects all clients and stops EBCG2.
+
+Control:
+	"insert <column>"		Inserts current number into the specified column. "error YouLose" if this column had only the highest cell empty.
+	"buy <number>"			Buys number for points. "error NotEnoughPoints <number>" if you have less than number points, where number is the cost. Clients could also calculate this.
+	"clearoption <y/n> <top/bottom/left/right>"		What to do after a board clear. y/n: Collect this clear? top/bottom/left/right: Expand board in this direction by one row/column. "error WrongOption" on syntax error.
