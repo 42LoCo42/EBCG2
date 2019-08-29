@@ -1,19 +1,19 @@
-Responses (sent from server to all clients):
+Responses (sent from server to all clients, unless stated otherwise):
 	"connect <id>"			Sent when a client connects.
 	"disconnect <id>"		Sent when a client disconnects.
-	"error"					Operation failed. "error WrongMode" is sent on all operations if not in the right mode (e.g. "insert" with no previous "newgame" or "loadgame"). Custom errors are noted.
-	"board <text>"			The board as a string, sent after each modification.
-	"curpoints <number>"	How many points you have. Sent after merges and buying.
-	"maxpoints <number>"	How many points you have earned in this game (not affected by buying). Sent after merges.
-	"number <number>"		The number that will be inserted next. Sent after each "insert".
+	"error"					Operation failed. "error WrongMode" is sent on all operations if not in the right mode (e.g. "insert" with no previous "newgame" or "loadgame"). Custom errors are noted. Only sent to client that caused it.
+	"savestate <text>"		The current SaveState as JSON: {"score": int, "maxScore": int, "number": int, "board": [[{"num": int, "prio": int"}, next cell in column], next column array]}
 	"clear"					Sent after an "insert" that caused a board clear. The game will wait for a "clearoption <y/n> <top/bottom/left/right>", details there.
+	"savegamelist <list>"	Response to "listsavegames". Only sent to the client that the first command originated from. list is a json array of strings, containing all saved game names.
+	"stopped"				Response to "stopserver". All clients are expected to shut down their connections after receiving this.
 
 Game management:
 	"newgame"				Starts a new game.
 	"savegame <name>"		Saves current game with this name. "error NameInvalid" if the name is invalid. "error NameInUse" if name in use.
+	"listsavegames"			Sends to the asking client a list of all names for "loadgame". See "savegamelist".
 	"loadgame <name>"		Loads savegame with this name. "error NameInvalid" if the name is invalid. "error NameNotFound" if name not found.
 	"quitgame"				Discards current game.
-	"stopserver"			Disconnects all clients and stops EBCG2.
+	"stopserver"			Disconnects all clients and stops EBCG2. Also see "stopped".
 
 Control:
 	"insert <column>"		Inserts current number into the specified column. "error YouLose" if this column had only the highest cell empty.

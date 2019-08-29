@@ -1,12 +1,14 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <time.h>
+#include <stdlib.h> // for rand & srand
+#include <time.h> // to generate a seed
 
-#include "BoardControl.hpp"
 #include "defs.hpp"
+#include "distribute.hpp"
+#include "BoardControl.hpp"
 #include "SaveState.hpp"
 
-SaveState save;
+using namespace std;
+
+extern SaveState save;
 bool boardChanged = false; // set if a step() changed the board -> redo step()
 bool seeded = false;
 
@@ -51,9 +53,10 @@ void step() {
 				if(save.board[x][y].prio > 0) doMerge(x, y);
 			}
 		}
-
 		applyUpdate();
-		
+		string savestring;
+		save.toString(savestring);
+		distribute(savestring);
 	}
 	while(boardChanged);
 }
@@ -135,8 +138,8 @@ void clearLowerThan(int num) {
 	}
 }
 
-bool insert(int col = -1) {
-	if(col == -1) col = save.currentCol;
+bool insert(int col) {
+	if(col < 0 || col >= save.board.size()) return true; // insert not possible, but no death
 	if(save.board[col][save.board[0].size()-1].num != 0) return false; // topmost row is full; can't insert cell
 
 	for(int y=save.board[col].size()-1; y>0; --y) { // scan downwards

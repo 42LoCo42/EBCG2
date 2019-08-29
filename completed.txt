@@ -1,0 +1,2 @@
+connect disconnect stopped
+newgame quitgame stopserver

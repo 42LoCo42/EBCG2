@@ -16,5 +16,5 @@ void step(); /** checks all cells for merges and does applyUpdate */
 void doMerge(int x, int y); /** check a cell for a merge and set its future values */
 void applyUpdate(); /** for each cell, copies the future values into the current ones */
 
-bool insert(int num, int col); /** insert a cell with this num into that column */
+bool insert(int col); /** insert a cell with the current number into that column */
 void clearLowerThan(int num); /** delete all cells with their num lower than this one */

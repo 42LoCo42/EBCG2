@@ -11,10 +11,3 @@ struct cell {
 };
 typedef std::vector<cell> column_t;
 typedef std::vector<column_t> board_t;
-
-enum GameState {
-	mainMenu, openMenu, settingsMenu,
-	playing, pauseMenu, saveMenu,
-	shop, timeline,
-	quit
-};

@@ -1,16 +1,16 @@
 #pragma once
-
 #include <string>
 
 #include "defs.hpp"
+const std::string TEMPLATE = "{\"score\": 0,\"maxScore\": 0,\"number\": 0,\"board\": []}";
 
 struct SaveState {
 	board_t board;
 	int score;
+	int maxScore;
 	int currentNum;
-	int currentCol;
 
 	SaveState(int x = 5, int y = 7);
-	// SaveState(std::string); /** deserialization */
-	// std::string toString();  /** serialization */
+	// SaveState(const std::string& data); /** deserialization */
+	void toString(std::string& result);  /** serialization */
 };
