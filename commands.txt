@@ -1,4 +1,6 @@
 Responses (sent from server to all clients):
+	"connect <id>"			Sent when a client connects.
+	"disconnect <id>"		Sent when a client disconnects.
 	"error"					Operation failed. "error WrongMode" is sent on all operations if not in the right mode (e.g. "insert" with no previous "newgame" or "loadgame"). Custom errors are noted.
 	"board <text>"			The board as a string, sent after each modification.
 	"curpoints <number>"	How many points you have. Sent after merges and buying.
