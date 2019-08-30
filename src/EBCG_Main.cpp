@@ -50,13 +50,12 @@ void checkSaveGameFolder() {
 
 int main(int argc, char* argv[]) {
 	// get number of clients
-	if(argc < 2) {
-		printf("Usage: ebcg2 <client count> [port]\n");
-		exit(1);
-	}
+	if(argc < 2) clientCount = 1;
+	else clientCount = stoi(string(argv[1]));
 
-	clientCount = stoi(string(argv[1]));
-	if(argc >= 3) port = stoi(string(argv[2]));
+	// get port
+	if(argc < 3) port = DEFAULT_PORT;
+	else port = stoi(string(argv[2]));
 
 	if(clientCount < 1) {
 		printf("Error: < 1 clients!\n");
