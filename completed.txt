@@ -1,2 +1,2 @@
 connect disconnect stopped
-newgame quitgame stopserver
+newgame quitgame stopserver insert buy

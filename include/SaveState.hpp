@@ -2,7 +2,7 @@
 #include <string>
 
 #include "defs.hpp"
-const std::string TEMPLATE = "{\"score\": 0,\"maxScore\": 0,\"number\": 0,\"board\": []}";
+const std::string TEMPLATE = "{\"score\": 0,\"maxScore\": 0,\"currentNum\": 0}";
 
 struct SaveState {
 	board_t board;
@@ -10,7 +10,7 @@ struct SaveState {
 	int maxScore;
 	int currentNum;
 
-	SaveState(int x = 5, int y = 7);
-	// SaveState(const std::string& data); /** deserialization */
-	void toString(std::string& result);  /** serialization */
+	void init(int x = 5, int y = 7);
+	void init(const std::string& data); /** deserialization */
+	std::string toString();  /** serialization */
 };

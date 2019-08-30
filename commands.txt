@@ -4,7 +4,7 @@ Responses (sent from server to all clients, unless stated otherwise):
 	"error"					Operation failed. "error WrongMode" is sent on all operations if not in the right mode (e.g. "insert" with no previous "newgame" or "loadgame"). Custom errors are noted. Only sent to client that caused it.
 	"savestate <text>"		The current SaveState as JSON: {"score": int, "maxScore": int, "number": int, "board": [[{"num": int, "prio": int"}, next cell in column], next column array]}
 	"clear"					Sent after an "insert" that caused a board clear. The game will wait for a "clearoption <y/n> <top/bottom/left/right>", details there.
-	"savegamelist <list>"	Response to "listsavegames". Only sent to the client that the first command originated from. list is a json array of strings, containing all saved game names.
+	"savegamelist <list>"	Response to "listsavegames". Only sent to the client that the first command originated from. JSON: {["name1", "name2" ...]}
 	"stopped"				Response to "stopserver". All clients are expected to shut down their connections after receiving this.
 
 Game management:
@@ -17,5 +17,5 @@ Game management:
 
 Control:
 	"insert <column>"		Inserts current number into the specified column. "error YouLose" if this column had only the highest cell empty.
-	"buy <number>"			Buys number for points. "error NotEnoughPoints <number>" if you have less than number points, where number is the cost. Clients could also calculate this.
+	"buy <number>"			Buys number for points. "error NotEnoughPoints" if you have not enough money. The cost is 2^(number+3)
 	"clearoption <y/n> <top/bottom/left/right>"		What to do after a board clear. y/n: Collect this clear? top/bottom/left/right: Expand board in this direction by one row/column. "error WrongOption" on syntax error.

@@ -80,15 +80,20 @@ int main(int argc, char* argv[]) {
 				else {
 					inGame = true;
 					printf("Starting new game!\n");
+					save.init();
+					distribute(save.toString());
 				}
 			}
 			else if(command.compare("savegame") == 0) {distribute("WIP");}
 			else if(command.compare("listsavegames") == 0) {distribute("WIP");}
 			else if(command.compare("loadgame") == 0) {distribute("WIP");}
 			else if(command.compare("quitgame") == 0) {
-				inGame = false;
-				save = SaveState();
-				printf("Quit game!\n");
+				if(!inGame) sendModeError(msg.client_id, "Not in game - can't quit!");
+				else {
+					inGame = false;
+					save = SaveState();
+					printf("Quit game!\n");
+				}
 			}
 			else if(command.compare("stopserver") == 0) {
 				printf("Server is stopping!\n");
@@ -103,11 +108,34 @@ int main(int argc, char* argv[]) {
 				}
 				else {
 					int column = parseInt(parts[1]);
+					printf("Inserting %i into column %i!\n", save.currentNum, column);
 					insert(column);
+					// distribution of save is done in BoardControl.step()
 				}
 			}
-			else if(command.compare("buy") == 0) {}
+			else if(command.compare("buy") == 0) {
+				if(!inGame)	sendModeError(msg.client_id, "Not in game - can't buy!");
+				else {
+					int num = parseInt(parts[1]);
+					if(buy(num)) {
+						printf("Bought %i!\n", num);
+						distribute(save.toString());
+					}
+					else {
+						printf("Can't buy %i - not enough points!\n", num);
+						server.send("error NotEnoughPoints", msg.client_id);
+					}
+				}
+			}
 			else if(command.compare("clearoption") == 0) {}
+			else if(command.compare("debug") == 0) {
+				printf("%s\n", save.toString().c_str());
+				printf("x:%i y:%i\n", save.board.size(), save.board[0].size());
+			}
+			else {
+				printf("Invalid command!\n");
+				distribute("error Invalid");
+			}
 		}
 		else {
 			if(msg.isNewClient) { // connection from new client

@@ -1,5 +1,6 @@
 #include <stdlib.h> // for rand & srand
 #include <time.h> // to generate a seed
+#include <cmath> // for score calculation (pow)
 
 #include "defs.hpp"
 #include "distribute.hpp"
@@ -20,6 +21,7 @@ int nextNum(int max) {
 
 void setupBoard(board_t& board, int xLen, int yLen) {
 	save.board = board_t(xLen);
+
 	for(int x=0; x<xLen; ++x) {
 		save.board[x] = column_t(yLen); // cells are created automagically
 	}
@@ -54,9 +56,7 @@ void step() {
 			}
 		}
 		applyUpdate();
-		string savestring;
-		save.toString(savestring);
-		distribute(savestring);
+		distribute(save.toString());
 	}
 	while(boardChanged);
 }
@@ -68,6 +68,7 @@ void doMerge(int x, int y) {
 	bool leftMerge = x > 0 && save.board[x-1][y].num == save.board[x][y].num;
 	bool rightMerge = x < save.board.size() - 1 && save.board[x+1][y].num == save.board[x][y].num;
 	bool belowMerge = y > 0 && save.board[x][y-1].num == save.board[x][y].num;
+	int cellCount = 1;
 
 	if(leftMerge || rightMerge) { // DEF2 merge (stair rule might apply)
 		// the infamous stair rule. yep, thats all.
@@ -80,16 +81,19 @@ void doMerge(int x, int y) {
 			save.board[x-1][y].futureNum = 0;
 			save.board[x-1][y].futurePrio = 0;
 			save.board[x][y].futureNum++;
+			cellCount++;
 		}
 		if(rightMerge) {
 			save.board[x+1][y].futureNum = 0;
 			save.board[x+1][y].futurePrio = 0;
 			save.board[x][y].futureNum++;
+			cellCount++;
 		}
 		if(belowMerge) {
 			save.board[x][y-1].futureNum = 0;
 			save.board[x][y-1].futurePrio = 0;
 			save.board[x][y].futureNum++;
+			cellCount++;
 		}
 
 		save.board[x][y].futurePrio = STAIR_PRIO_AFTER_MERGE; // TODO: or DEFAULT_PRIO if the Stair Rule is disabled
@@ -101,6 +105,13 @@ void doMerge(int x, int y) {
 		save.board[x][y].futureNum = 0;
 		save.board[x][y].futurePrio = 0;
 		boardChanged = true;
+		cellCount++;
+	}
+	
+	if(boardChanged) {
+		int score = (int) pow(2, (save.board[x][y].num + cellCount - 1));
+		save.score += score;
+		save.maxScore += score;
 	}
 }
 
@@ -139,7 +150,11 @@ void clearLowerThan(int num) {
 }
 
 bool insert(int col) {
-	if(col < 0 || col >= save.board.size()) return true; // insert not possible, but no death
+	if(col < 0 || col >= save.board.size()) {
+		save.currentNum = nextNum(6);
+		return true; // insert not possible, but no death
+	}
+
 	if(save.board[col][save.board[0].size()-1].num != 0) return false; // topmost row is full; can't insert cell
 
 	for(int y=save.board[col].size()-1; y>0; --y) { // scan downwards
@@ -149,6 +164,7 @@ bool insert(int col) {
 			save.board[col][y].prio = DEFAULT_PRIO;
 			save.board[col][y].futureNum = save.currentNum;
 			
+			save.currentNum = nextNum(6);
 			step();
 			return true;
 		}
@@ -159,6 +175,18 @@ bool insert(int col) {
 	save.board[col][0].prio = DEFAULT_PRIO;
 	save.board[col][0].futureNum = save.currentNum;
 	
+	save.currentNum = nextNum(6);
 	step();
+	return true;
+}
+
+bool buy(int number) {
+	if(number < 0) return false;
+
+	int cost = (int) pow(2, (number+3));
+	if(save.score < cost) return false;
+
+	save.currentNum = number;
+	save.score -= cost;
 	return true;
 }
