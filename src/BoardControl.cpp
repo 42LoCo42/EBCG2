@@ -19,7 +19,7 @@ int nextNum(int max) {
 	return rand() % max + 1;
 }
 
-void setupBoard(board_t& board, int xLen, int yLen) {
+void setupBoard(int xLen, int yLen) {
 	save.board = board_t(xLen);
 
 	for(int x=0; x<xLen; ++x) {

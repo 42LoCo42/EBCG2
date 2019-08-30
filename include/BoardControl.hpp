@@ -9,7 +9,7 @@ enum enlargeOption {
 
 int nextNum(int max);
 
-void setupBoard(board_t& board, int xLen, int yLen); /** creates an empty board of these dimensions */
+void setupBoard(int xLen, int yLen); /** creates an empty board of these dimensions */
 void enlarge(const enlargeOption& opt); /** adds a row of cells on this side */
 
 void step(); /** checks all cells for merges and does applyUpdate */
