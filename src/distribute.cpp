@@ -9,6 +9,6 @@ void distribute(const std::string& msg) {
 	server.getActiveClients(ids);
 
 	for(int client_id : ids) {
-		server.send(msg, client_id);
+		server.send(msg + '\n', client_id);
 	}
 }

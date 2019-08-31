@@ -30,7 +30,7 @@ void split(const string& s, const string& delim, vector<string>& strings) {
 }
 
 void sendModeError(int client_id, const string& errorMsg = "") {
-	server.send("error WrongMode", client_id);
+	server.send("error WrongMode\n", client_id);
 	printf("Mode error! %s\n", errorMsg.c_str());
 }
 
@@ -89,7 +89,14 @@ int main(int argc, char* argv[]) {
 					inGame = true;
 					printf("Starting new game!\n");
 					save.init();
-					distribute(save.toString());
+					distribute("savestate " + save.toString());
+				}
+			}
+			else if(command.compare("getgame") == 0) {
+				if(!inGame) sendModeError(msg.client_id, "Not in game - can't get data!");
+				else {
+					printf("Client %i has requested the game data!\n", msg.client_id);
+					server.send("savestate " + save.toString() + '\n', msg.client_id);
 				}
 			}
 			else if(command.compare("savegame") == 0) {distribute("WIP");}
@@ -116,7 +123,7 @@ int main(int argc, char* argv[]) {
 			else if(command.compare("insert") == 0) {
 				if(!inGame) sendModeError(msg.client_id, "Can't insert while not in game!");
 				else if(parts.size() < 2) {
-					server.send("error ArgCount", msg.client_id);
+					server.send("error ArgCount\n", msg.client_id);
 					printf("Too few arguments - need 2!\n");
 				}
 				else {
@@ -132,11 +139,11 @@ int main(int argc, char* argv[]) {
 					int num = parseInt(parts[1]);
 					if(buy(num)) {
 						printf("Bought %i!\n", num);
-						distribute(save.toString());
+						distribute("savestate " + save.toString());
 					}
 					else {
 						printf("Can't buy %i - not enough points!\n", num);
-						server.send("error NotEnoughPoints", msg.client_id);
+						server.send("error NotEnoughPoints\n", msg.client_id);
 					}
 				}
 			}
@@ -147,7 +154,7 @@ int main(int argc, char* argv[]) {
 			}
 			else {
 				printf("Invalid command!\n");
-				server.send("error Invalid", msg.client_id);
+				server.send("error Invalid\n", msg.client_id);
 			}
 		}
 		else {

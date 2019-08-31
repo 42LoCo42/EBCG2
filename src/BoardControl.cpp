@@ -56,7 +56,7 @@ void step() {
 			}
 		}
 		applyUpdate();
-		distribute(save.toString());
+		distribute("savestate " + save.toString());
 	}
 	while(boardChanged);
 }

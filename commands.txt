@@ -8,7 +8,8 @@ Responses (sent from server to all clients, unless stated otherwise):
 	"stopped"				Response to "stopserver". All clients are expected to shut down their connections after receiving this.
 
 Game management:
-	"newgame"				Starts a new game.
+	"newgame"				Starts a new game. Responds with "savestate"
+	"getgame"				Responds with "savestate" when a game is running.
 	"savegame <name>"		Saves current game with this name. "error NameInvalid" if the name is invalid. "error NameInUse" if name in use.
 	"listsavegames"			Sends to the asking client a list of all names for "loadgame". See "savegamelist".
 	"loadgame <name>"		Loads savegame with this name. "error NameInvalid" if the name is invalid. "error NameNotFound" if name not found.
