@@ -170,12 +170,12 @@ int main(int argc, char* argv[]) {
 				}
 				else {
 					printf("Client %s (index %i) connected!\n", clientIP.c_str(), msg.client_id);
-					distribute("connect " + to_string(msg.client_id));
+					server.send("connect " + to_string(msg.client_id) + '\n', msg.client_id);
 				}
 			}
 			else { // client disconnected
 				printf("Client %s (index %i) disconnected!\n", clientIP.c_str(), msg.client_id);
-				distribute("disconnect " + to_string(msg.client_id));
+				distribute("disconnect " + to_string(msg.client_id) + '\n');
 
 			}
 		}
