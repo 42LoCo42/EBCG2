@@ -10,7 +10,7 @@ using namespace rapidjson;
 
 void SaveState::init(int x, int y) {
 	board = board_t(x);
-	setupBoard(board, x, y);
+	setupBoard(x, y);
 	score = 0;
 	maxScore = 0;
 	currentNum = nextNum(6);
@@ -23,9 +23,9 @@ void SaveState::init(const string& data) {
 	Value& scoreVal = d["score"];
 	score = scoreVal.GetInt();
 	Value& maxScoreVal = d["maxScore"];
-	maxScore = scoreVal.GetInt();
+	maxScore = maxScoreVal.GetInt();
 	Value& numberVal = d["currentNum"];
-	currentNum = scoreVal.GetInt();
+	currentNum = numberVal.GetInt();
 
 	Value& boardArray = d["board"];
 	board = board_t();

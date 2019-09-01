@@ -21,9 +21,9 @@ BUILD_DIR ?= ./build
 
 # Set flags here (C, C++, Assembly, Linker)
 CFLAGS ?=
-CXXFLAGS ?= --std=c++14
+CXXFLAGS ?= --std=c++17
 ASFLAGS ?=
-LDFLAGS ?= -lmss
+LDFLAGS ?= -lmss --std=c++17
 
 
 # Everything below this line does not need to be changed normally!

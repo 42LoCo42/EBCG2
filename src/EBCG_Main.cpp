@@ -1,6 +1,7 @@
 #include <stdio.h> // printf
 #include <string> // for messages
 #include <MSS.hpp> // for server
+#include <filesystem> // for saving & loading
 
 #include "defs.hpp"
 #include "distribute.hpp"
@@ -8,8 +9,10 @@
 #include "SaveState.hpp"
 
 using namespace std;
+namespace fs = std::filesystem;
 
 constexpr int DEFAULT_PORT = 2048;
+const string saveGameFolder = "./EBCG2_savegames";
 int port = DEFAULT_PORT, clientCount;
 MSS server;
 
@@ -39,15 +42,19 @@ int parseInt(const string& s) {
 	}
 }
 
+void checkSaveGameFolder() {
+	if(!fs::exists(saveGameFolder)) {
+		fs::create_directory(saveGameFolder);
+	}
+}
+
 int main(int argc, char* argv[]) {
 	// get number of clients
-	if(argc < 2) {
-		printf("Usage: ebcg2 <client count> [port]\n");
-		exit(1);
-	}
+	if(argc < 2) clientCount = 1;
+	else clientCount = stoi(string(argv[1]));
 
-	clientCount = stoi(string(argv[1]));
-	if(argc >= 3) port = stoi(string(argv[2]));
+	if(argc < 3) port = DEFAULT_PORT;
+	else port = stoi(string(argv[2]));
 
 	if(clientCount < 1) {
 		printf("Error: < 1 clients!\n");
@@ -85,7 +92,12 @@ int main(int argc, char* argv[]) {
 				}
 			}
 			else if(command.compare("savegame") == 0) {distribute("WIP");}
-			else if(command.compare("listsavegames") == 0) {distribute("WIP");}
+			else if(command.compare("listsavegames") == 0) {
+				checkSaveGameFolder();
+				for(const auto& entry : fs::directory_iterator(saveGameFolder)) {
+					// TODO
+				}
+			}
 			else if(command.compare("loadgame") == 0) {distribute("WIP");}
 			else if(command.compare("quitgame") == 0) {
 				if(!inGame) sendModeError(msg.client_id, "Not in game - can't quit!");
@@ -134,7 +146,7 @@ int main(int argc, char* argv[]) {
 			}
 			else {
 				printf("Invalid command!\n");
-				distribute("error Invalid");
+				server.send("error Invalid", msg.client_id);
 			}
 		}
 		else {

@@ -31,3 +31,6 @@
 *.out
 *.app
 EBCG2
+
+# EBCG2 Data
+EBCG2_savegames/
