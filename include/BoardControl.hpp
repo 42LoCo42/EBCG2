@@ -18,4 +18,4 @@ void applyUpdate(); /** for each cell, copies the future values into the current
 
 bool insert(int col); /** insert a cell with the current number into that column */
 bool buy(int num); /** buy a number for 2^(num+3) points */
-void clearLowerThan(int num); /** delete all cells with their num lower than this one */
+void clearLowerThan(); /** delete all cells with their num lower than this one */

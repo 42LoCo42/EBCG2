@@ -9,6 +9,8 @@
 
 using namespace std;
 
+constexpr int CLEAR_NUMBER = 14;
+
 extern SaveState save;
 bool boardChanged = false; // set if a step() changed the board -> redo step()
 bool seeded = false;
@@ -99,7 +101,7 @@ void doMerge(int x, int y) {
 		save.board[x][y].futurePrio = STAIR_PRIO_AFTER_MERGE; // TODO: or DEFAULT_PRIO if the Stair Rule is disabled
 		boardChanged = true;
 	}
-	else if(belowMerge) { // DEF1 merge (immediately move down, as proclaimed by the Holy Song of Combined Potency)
+	else if(belowMerge) { // DEF1 merge (immediately move down)
 		save.board[x][y-1].futureNum = save.board[x][y].futureNum + 1;
 		save.board[x][y-1].futurePrio = STAIR_PRIO_AFTER_MERGE; // TODO: or DEFAULT_PRIO if the Stair Rule is disabled
 		save.board[x][y].futureNum = 0;
@@ -117,7 +119,7 @@ void doMerge(int x, int y) {
 
 void applyUpdate() {
 	for(int x=0; x<save.board.size(); ++x) {
-		for(int y=0; y<save.board[0].size(); ++y) {
+		for(int y=0; y<save.board[x].size(); ++y) {
 			if(y < save.board.size() - 1 && save.board[x][y].num == 0 && save.board[x][y+1].num > 0) { // cell has something above and is 0 (NOT will be 0!!)
 				// move the cell above to here and reset it
 				save.board[x][y] = save.board[x][y+1];
@@ -139,10 +141,10 @@ void applyUpdate() {
 }
 
 // needed for Clear event (reaching number E = 14) processing
-void clearLowerThan(int num) {
+void clearLowerThan() {
 	for(int x=0; x<save.board.size(); ++x) {
 		for(int y=0; y<save.board[0].size(); ++y) {
-			if(save.board[x][y].num < num) { // reset this cell
+			if(save.board[x][y].num < CLEAR_NUMBER) { // reset this cell
 				save.board[x][y] = cell();
 			}
 		}
@@ -155,8 +157,6 @@ bool insert(int col) {
 		return true; // insert not possible, but no death
 	}
 
-	if(save.board[col][save.board[0].size()-1].num != 0) return false; // topmost row is full; can't insert cell
-
 	for(int y=save.board[col].size()-1; y>0; --y) { // scan downwards
 		if(save.board[col][y-1].num != 0) { // cell below is not zero
 
@@ -166,6 +166,7 @@ bool insert(int col) {
 			
 			save.currentNum = nextNum(6);
 			step();
+			if(save.board[col][save.board[0].size()-1].num != 0) return false; // topmost row is full after step(); the game is lost
 			return true;
 		}
 	}
@@ -177,11 +178,12 @@ bool insert(int col) {
 	
 	save.currentNum = nextNum(6);
 	step();
+	if(save.board[col][save.board[0].size()-1].num != 0) return false; // topmost row is full after step(); the game is lost
 	return true;
 }
 
 bool buy(int number) {
-	if(number < 0) return false;
+	if(number < 0 || number > 27) return false;
 
 	int cost = (int) pow(2, (number+3));
 	if(save.score < cost) return false;

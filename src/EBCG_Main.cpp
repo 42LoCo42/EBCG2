@@ -129,7 +129,13 @@ int main(int argc, char* argv[]) {
 				else {
 					int column = parseInt(parts[1]);
 					printf("Inserting %i into column %i!\n", save.currentNum, column);
-					insert(column);
+
+					if(!insert(column)) {
+						printf("Game lost!\n");
+						distribute("error YouLose");
+						inGame = false;
+						save = SaveState();
+					}
 					// distribution of save is done in BoardControl.step()
 				}
 			}
